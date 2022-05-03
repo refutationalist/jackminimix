@@ -85,6 +85,7 @@ int process_jack_audio(jack_nframes_t nframes, void *arg)
 
 	// Mix each input into the output buffer
 	for ( ch=0; ch < channel_count ; ch++ ) {
+		if (channels[ch].mute == true) continue;
 		float mix_gain;
 		jack_default_audio_sample_t *in_left =
 			jack_port_get_buffer(channels[ch].left_port, nframes);
@@ -243,6 +244,7 @@ jmm_channel_t* init_channels( int chan_count )
 		// Create the JACK input ports
 		channels[c].left_port = create_input_port( "left", c );
 		channels[c].right_port = create_input_port( "right", c );
+		channels[c].mute = false;
 	}
 			
 	return channels;

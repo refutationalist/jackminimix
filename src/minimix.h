@@ -24,6 +24,7 @@
 #define __jmm_minimix_h
 
 #include <jack/jack.h>
+#include <stdbool.h>
 
 
 #define		DEFAULT_CLIENT_NAME		"minimixer"		// Default name of JACK client
@@ -36,6 +37,7 @@ typedef struct {
 	char label[CHANNEL_LABEL_LEN];	// Label for Channel
 	float current_gain;				// decibels
 	float desired_gain;				// decibels
+	bool mute;         				// muted
 	jack_port_t *left_port;			// Left Input Port
 	jack_port_t *right_port;		// Right Input Port
 } jmm_channel_t;
