@@ -26,6 +26,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
+#include <stdbool.h>
 
 #include <getopt.h>
 #include "config.h"
@@ -36,11 +37,13 @@
 
 
 jack_port_t *outport[2] = {NULL, NULL};
+jack_port_t *monoport = NULL;
 jack_client_t *client = NULL;
  
-unsigned int verbose = 0;
-unsigned int quiet = 0;
-unsigned int running = 1;
+bool verbose = false;
+bool quiet = false;
+bool running = true;
+bool mono = false;
 unsigned int channel_count = DEFAULT_CHANNEL_COUNT;
 jmm_channel_t *channels = NULL;
 
@@ -54,7 +57,7 @@ void signal_handler (int signum)
 			case SIGINT:	fprintf(stderr, "Got interupt signal.\n"); break;
 		}
 	}
-	running=0;
+	running = false;
 }
 
 
@@ -63,7 +66,7 @@ void signal_handler (int signum)
 static
 void shutdown_callback_jack(void *arg)
 {
-	running = 0;
+	running = false;
 }
 
 
@@ -74,8 +77,12 @@ int process_jack_audio(jack_nframes_t nframes, void *arg)
 		jack_port_get_buffer(outport[0], nframes);
 	jack_default_audio_sample_t *out_right =
 		jack_port_get_buffer(outport[1], nframes);
+
+	jack_default_audio_sample_t *out_mono;
 	jack_nframes_t n=0;
 	int ch;
+
+	if (mono) out_mono = jack_port_get_buffer(monoport, nframes);
 	
 	// Put silence into the outputs
 	for ( n=0; n<nframes; n++ ) {
@@ -109,6 +116,8 @@ int process_jack_audio(jack_nframes_t nframes, void *arg)
 		for ( n=0; n<nframes; n++ ) {
 			out_left[ n ] += (in_left[ n ] * mix_gain);
 			out_right[ n ] += (in_right[ n ] * mix_gain);
+
+			if (mono) out_mono[n] = ( (in_left[ n ] * mix_gain) + (in_right[ n ] * mix_gain) ) / 2;
 		}
 		
 	}
@@ -140,6 +149,15 @@ void init_jack( const char * client_name )
 	if (!(outport[1] = jack_port_register(client, "out_right", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0))) {
 		fprintf(stderr, "Cannot register output port 'out_right'.\n");
 		exit(1);
+	}
+
+	if (mono) {
+		if (verbose) printf("creating mono output\n");
+		if (!(monoport = jack_port_register(client, "out_mono", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0))) {
+			fprintf(stderr, "Cannot register output port 'out_mono'.\n");
+			exit(1);
+		}
+
 	}
 	
 	// Register shutdown callback
@@ -268,6 +286,7 @@ int usage( )
 	printf("   -c <count>    Number of input channels (default 4)\n");
 	printf("   -p <port>     Set the UDP port number for OSC\n");
 	printf("   -n <name>     Name for this JACK client (default minimix)\n");
+	printf("   -m            Create a mono out\n");
 	printf("   -v            Enable verbose mode\n");
 	printf("   -q            Enable quiet mode\n");
 	printf("\n");
@@ -287,7 +306,7 @@ int main(int argc, char *argv[])
 	
 	
 	// Parse the command line arguments
-	while ((opt = getopt(argc, argv, "al:r:c:n:p:vqh")) != -1) {
+	while ((opt = getopt(argc, argv, "al:r:c:n:p:vqhm")) != -1) {
 		switch (opt) {
 			case 'a':  autoconnect = 1; break;
 			case 'l':  connect_left = optarg; break;
@@ -295,8 +314,9 @@ int main(int argc, char *argv[])
 			case 'c':  channel_count = atoi(optarg); break;
 			case 'n':  client_name = optarg; break;
 			case 'p':  osc_port = optarg; break;
-			case 'v':  verbose++; break;
-			case 'q':  quiet++; break;
+			case 'v':  verbose = true; break;
+			case 'q':  quiet = true; break;
+			case 'm':  mono = true; break;
 			default:
 				fprintf(stderr, "Unknown option '%c'.\n", (char)opt);
 			case 'h':

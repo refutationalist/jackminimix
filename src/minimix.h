@@ -42,12 +42,10 @@ typedef struct {
 	jack_port_t *right_port;		// Right Input Port
 } jmm_channel_t;
 
-extern jack_port_t *outport[2];
-extern jack_client_t *client;
  
-extern unsigned int verbose;
-extern unsigned int quiet;
-extern unsigned int running;
+extern bool verbose;
+extern bool quiet;
+extern bool running;
 extern unsigned int channel_count;
 extern jmm_channel_t *channels;
 
