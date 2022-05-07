@@ -89,8 +89,8 @@ void ws_channel_state(ws_cli_conn_t *client, int channel) {
 		ws_client_error(client, "Invalid channel.");
 		return;
 	} else {
-		start = channel;
-		end = channel+1;
+		start = channel - 1;
+		end = channel;
 	}
 
 
@@ -142,7 +142,7 @@ void ws_set_gain(ws_cli_conn_t *client, struct json_object *action) {
 	if (verbose) printf("ws client %s set gain on channel %d to %f\n", ws_getport(client), ch, db);
 
 	channels[ch-1].desired_gain = (float) db;
-	ws_channel_state(NULL, ch-1);
+	ws_channel_state(NULL, ch);
 
 
 
@@ -169,7 +169,7 @@ void ws_set_mute(ws_cli_conn_t *client, struct json_object *action, bool set) {
 		channels[ch-1].mute = false;
 	}
 
-	ws_channel_state(NULL, ch-1);
+	ws_channel_state(NULL, ch);
 }
 
 void ws_set_label(ws_cli_conn_t *client, struct json_object *action) {
@@ -195,7 +195,7 @@ void ws_set_label(ws_cli_conn_t *client, struct json_object *action) {
 
 	strncpy(channels[ch-1].label, label, CHANNEL_LABEL_LEN);
 	if (verbose) printf("ws client %s changed label of channel %d to '%s'\n", ws_getport(client), ch, channels[ch-1].label);
-	ws_channel_state(NULL, ch-1);
+	ws_channel_state(NULL, ch);
 }
 
 void ws_messages(ws_cli_conn_t *client, const unsigned char *incoming, uint64_t size, int type) {
@@ -228,7 +228,7 @@ void ws_messages(ws_cli_conn_t *client, const unsigned char *incoming, uint64_t 
 			
 			if (get_action_int(action, "ch", &ch)) {
 				if (verbose) printf("ws client %s requested state for channel %d\n", port, ch);
-				ws_channel_state(client, ch-1);
+				ws_channel_state(client, ch);
 			} else {
 				ws_client_error(client, "Bad state request.");
 			}
