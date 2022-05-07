@@ -37,7 +37,11 @@ PKG_CHECK_MODULES(JACK, jack >= 0.100.0)
 # Check for LibLO
 PKG_CHECK_MODULES(LIBLO, liblo >= 0.23)
 
+# Check for WSServer
+PKG_CHECK_MODULES(WSSERVER, wsserver >= 1.0)
 
+# Check for json-c
+PKG_CHECK_MODULES(JSONC, json-c >= 0.16)
 
 dnl ############## Header Checks
 

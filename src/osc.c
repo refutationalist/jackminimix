@@ -295,6 +295,7 @@ lo_server_thread init_osc( const char * port )
     lo_server_thread_add_method(st, "/mixer/channel/get_label", "i", osc_get_label_handler, serv);
     lo_server_thread_add_method(st, "/mixer/channel/set_label", "is", osc_set_label_handler, serv);
 	lo_server_thread_add_method(st, "/mixer/channel/set_mute", "iT", osc_set_mute_handler, serv);
+	// FIXME I don't seem to be able to easily tell a true from a false from lo_arg, and I don't want to find out.
 	lo_server_thread_add_method(st, "/mixer/channel/set_mute", "iF", osc_unset_mute_handler, serv);
 	lo_server_thread_add_method(st, "/mixer/channel/get_mute", "i", osc_get_mute_handler, serv);
 	lo_server_thread_add_method(st, "/ping", "", osc_ping_handler, serv);

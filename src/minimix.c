@@ -33,6 +33,7 @@
 #include "db.h"
 #include "minimix.h"
 #include "osc.h"
+#include "websocket.h"
 
 
 
@@ -117,7 +118,7 @@ int process_jack_audio(jack_nframes_t nframes, void *arg)
 			out_left[ n ] += (in_left[ n ] * mix_gain);
 			out_right[ n ] += (in_right[ n ] * mix_gain);
 
-			if (mono) out_mono[n] = ( (in_left[ n ] * mix_gain) + (in_right[ n ] * mix_gain) ) / 2;
+			if (mono) out_mono[n] = (  (in_left[n] + in_right[n]) * mix_gain ) / 2;
 		}
 		
 	}
@@ -285,6 +286,7 @@ int usage( )
 	printf("   -r <port>     Connect right output to this input port\n");
 	printf("   -c <count>    Number of input channels (default 4)\n");
 	printf("   -p <port>     Set the UDP port number for OSC\n");
+	printf("   -w <port>     Set the TCP port for websocket\n");
 	printf("   -n <name>     Name for this JACK client (default minimix)\n");
 	printf("   -m            Create a mono out\n");
 	printf("   -v            Enable verbose mode\n");
@@ -302,11 +304,12 @@ int main(int argc, char *argv[])
 	char *connect_left = NULL;
 	char *connect_right = NULL;
 	char* osc_port = NULL;
+	char* ws_port = NULL;
 	int i,opt;
 	
 	
 	// Parse the command line arguments
-	while ((opt = getopt(argc, argv, "al:r:c:n:p:vqhm")) != -1) {
+	while ((opt = getopt(argc, argv, "al:r:c:n:p:w:vqhm")) != -1) {
 		switch (opt) {
 			case 'a':  autoconnect = 1; break;
 			case 'l':  connect_left = optarg; break;
@@ -317,6 +320,7 @@ int main(int argc, char *argv[])
 			case 'v':  verbose = true; break;
 			case 'q':  quiet = true; break;
 			case 'm':  mono = true; break;
+			case 'w':  ws_port = optarg; break;
 			default:
 				fprintf(stderr, "Unknown option '%c'.\n", (char)opt);
 			case 'h':
@@ -369,7 +373,10 @@ int main(int argc, char *argv[])
 
 
 	// Setup OSC
-	server_thread = init_osc( osc_port );
+	if (osc_port) server_thread = init_osc( osc_port );
+
+	// Setup Websocket
+	if (ws_port) init_websocket( ws_port );
 
 
 	// Sleep until we are done (work is done in threads)
@@ -379,7 +386,7 @@ int main(int argc, char *argv[])
 	
 	
 	// Cleanup
-	finish_osc( server_thread );
+	if (osc_port) finish_osc( server_thread );
 	finish_jack( client );
 	finish_channels( channels );
 
