@@ -304,8 +304,7 @@ int main(int argc, char *argv[])
 	char *connect_left = NULL;
 	char *connect_right = NULL;
 	char* osc_port = NULL;
-	char* ws_port = NULL;
-	int i,opt;
+	int i,opt,ws_port;
 	
 	
 	// Parse the command line arguments
@@ -320,7 +319,7 @@ int main(int argc, char *argv[])
 			case 'v':  verbose = true; break;
 			case 'q':  quiet = true; break;
 			case 'm':  mono = true; break;
-			case 'w':  ws_port = optarg; break;
+			case 'w':  ws_port = atoi(optarg); break;
 			default:
 				fprintf(stderr, "Unknown option '%c'.\n", (char)opt);
 			case 'h':

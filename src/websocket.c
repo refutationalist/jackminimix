@@ -285,14 +285,15 @@ void ws_disconnect(ws_cli_conn_t *client) {
 
 
 
-void init_websocket(char *port) {
-	struct ws_events wse;
-		wse.onopen    = &ws_connect;
-		wse.onclose   = &ws_disconnect;
-		wse.onmessage = &ws_messages;
-
+void init_websocket(int port) {
 	if (verbose) printf("Websocket server URL: ws://localhost:%s\n", port);
-	ws_socket(&wse, "localhost", port, 1, 0);
-
-
+	ws_socket(&(struct ws_server){
+		.host = "localhost",
+		.port = port,
+		.thread_loop   = 1,
+		.timeout_ms    = 1000,
+		.evs.onopen    = &ws_connect,
+		.evs.onclose   = &ws_disconnect,
+		.evs.onmessage = &ws_messages
+	});
 }
