@@ -1,6 +1,6 @@
 AM_CFLAGS = $(JACK_CFLAGS) $(LIBLO_CFLAGS) $(WSSERVER_CFLAGS) $(JSONC_CFLAGS) $(WARNING_CFLAGS)
 
-bin_PROGRAMS = jackminimix
+bin_PROGRAMS = jackwsmix
 
-jackminimix_SOURCES = osc.c minimix.c websocket.c db.h
-jackminimix_LDADD = $(JACK_LIBS) $(LIBLO_LIBS) $(WSSERVER_LIBS) $(JSONC_LIBS)
+jackwsmix_SOURCES = osc.c minimix.c websocket.c db.h
+jackwsmix_LDADD = $(JACK_LIBS) $(LIBLO_LIBS) $(WSSERVER_LIBS) $(JSONC_LIBS)

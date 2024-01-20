@@ -4,7 +4,7 @@
 #define __jmm_websocket_h
 
 
-void init_websocket( const char *port );
+void init_websocket( int port );
 
 
 
